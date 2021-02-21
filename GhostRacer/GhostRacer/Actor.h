@@ -12,9 +12,18 @@ public:
 	virtual void doSomething() = 0;
 };
 
+class BorderLine : public Actor
+{
+public:
+	BorderLine(double startX, double startY, int colorID);
+	virtual void doSomething();
+};
+
 class GhostRacer : public Actor
 {
-	virtual void doSomething()
+public:
+	GhostRacer(double startX, double startY);
+	virtual void doSomething();
 };
 
 #endif // ACTOR_H_
