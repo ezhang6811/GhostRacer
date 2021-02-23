@@ -6,9 +6,10 @@
 #include <string>
 #include <vector>
 
+// Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
+
 class GhostRacer;
 class Actor;
-// Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
 class StudentWorld : public GameWorld
 {
@@ -22,8 +23,19 @@ public:
 private:
     GhostRacer* m_player;
     std::vector<Actor*> m_actors;
+
+    //pointers to determine road borders last added to screen
     Actor* lastYellow;
     Actor* lastWhite;
 };
+
+//values for border positions derived from global constants
+const double LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH / 2;
+const double RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH / 2;
+const double LEFT_X = LEFT_EDGE + ROAD_WIDTH / 3;
+const double RIGHT_X = RIGHT_EDGE - ROAD_WIDTH / 3;
+
+//function that checks for overlap of two Actor objects
+bool createNewActor(int genChance);
 
 #endif // STUDENTWORLD_H_

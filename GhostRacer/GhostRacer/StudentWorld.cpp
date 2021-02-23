@@ -2,8 +2,8 @@
 #include "GameConstants.h"
 #include "Actor.h"
 #include <string>
-using namespace std;
 
+using namespace std;
 
 GameWorld* createStudentWorld(string assetPath)
 {
@@ -16,11 +16,6 @@ StudentWorld::StudentWorld(string assetPath)
 : GameWorld(assetPath), m_player(nullptr), lastYellow(nullptr), lastWhite(nullptr)
 {
 }
-
-double LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH / 2;
-double RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH / 2;
-double LEFT_X = LEFT_EDGE + ROAD_WIDTH / 3;
-double RIGHT_X = RIGHT_EDGE - ROAD_WIDTH / 3;
 
 int StudentWorld::init()
 {
@@ -63,6 +58,8 @@ int StudentWorld::init()
         m_actors.insert(m_actors.begin(), whiteBorder);
         lastWhite = whiteBorder;
     }
+
+    setGameStatText("hihihihihih");
 
     return GWSTATUS_CONTINUE_GAME;
 }
@@ -114,6 +111,14 @@ int StudentWorld::move()
         lastWhite = whiteBorder;
     }
 
+    //add lost souls
+    int lostSoulChance = 100;
+    if (createNewActor(lostSoulChance))
+    {
+        Actor* lostSoul = new LostSoul(m_player, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT);
+        m_actors.push_back(lostSoul);
+    }
+
     return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -130,4 +135,10 @@ void StudentWorld::cleanUp()
 StudentWorld::~StudentWorld()
 {
     cleanUp();
+}
+
+bool createNewActor(int genChance)
+{
+    int n = randInt(0, genChance);
+    return (n == 0);
 }
