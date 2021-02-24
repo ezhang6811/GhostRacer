@@ -20,6 +20,8 @@ public:
     virtual void cleanUp();
     ~StudentWorld();
 
+    GhostRacer* getPlayer() { return m_player; }
+
 private:
     GhostRacer* m_player;
     std::vector<Actor*> m_actors;

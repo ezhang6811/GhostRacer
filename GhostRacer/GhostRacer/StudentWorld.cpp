@@ -28,7 +28,7 @@ int StudentWorld::init()
     for (int i = 0; i < N; i++)
     {
         double Y = i * SPRITE_HEIGHT;
-        Actor* leftBorder = new BorderLine(m_player, LEFT_EDGE, Y, IID_YELLOW_BORDER_LINE);
+        Actor* leftBorder = new BorderLine(this, LEFT_EDGE, Y, IID_YELLOW_BORDER_LINE);
         m_actors.push_back(leftBorder);
         lastYellow = leftBorder;
     }
@@ -36,7 +36,7 @@ int StudentWorld::init()
     for (int i = 0; i < N; i++)
     {
         double Y = i * SPRITE_HEIGHT;
-        Actor* rightBorder = new BorderLine(m_player, RIGHT_EDGE, Y, IID_YELLOW_BORDER_LINE);
+        Actor* rightBorder = new BorderLine(this, RIGHT_EDGE, Y, IID_YELLOW_BORDER_LINE);
         m_actors.push_back(rightBorder);
         lastYellow = rightBorder;
     }
@@ -46,7 +46,7 @@ int StudentWorld::init()
     for (int i = 0; i < M; i++)
     {
         double Y = i * (4 * SPRITE_HEIGHT);
-        Actor* whiteBorder = new BorderLine(m_player, LEFT_X, Y, IID_WHITE_BORDER_LINE);
+        Actor* whiteBorder = new BorderLine(this, LEFT_X, Y, IID_WHITE_BORDER_LINE);
         m_actors.insert(m_actors.begin(), whiteBorder);
         lastWhite = whiteBorder;
     }
@@ -54,7 +54,7 @@ int StudentWorld::init()
     for (int i = 0; i < M; i++)
     {
         double Y = i * (4 * SPRITE_HEIGHT);
-        Actor* whiteBorder = new BorderLine(m_player, RIGHT_X, Y, IID_WHITE_BORDER_LINE);
+        Actor* whiteBorder = new BorderLine(this, RIGHT_X, Y, IID_WHITE_BORDER_LINE);
         m_actors.insert(m_actors.begin(), whiteBorder);
         lastWhite = whiteBorder;
     }
@@ -93,9 +93,9 @@ int StudentWorld::move()
     if (delta_y >= SPRITE_HEIGHT)
     {
         //add yellow border lines
-        Actor* yellowBorder = new BorderLine(m_player, LEFT_EDGE, new_border_y, IID_YELLOW_BORDER_LINE);
+        Actor* yellowBorder = new BorderLine(this, LEFT_EDGE, new_border_y, IID_YELLOW_BORDER_LINE);
         m_actors.push_back(yellowBorder);
-        yellowBorder = new BorderLine(m_player, RIGHT_EDGE, new_border_y, IID_YELLOW_BORDER_LINE);
+        yellowBorder = new BorderLine(this, RIGHT_EDGE, new_border_y, IID_YELLOW_BORDER_LINE);
         m_actors.push_back(yellowBorder);
         lastYellow = yellowBorder;
     }
@@ -104,9 +104,9 @@ int StudentWorld::move()
     if (delta_y >= SPRITE_HEIGHT * 4)
     {
         //add white border lines
-        Actor* whiteBorder = new BorderLine(m_player, LEFT_X, new_border_y, IID_WHITE_BORDER_LINE);
+        Actor* whiteBorder = new BorderLine(this, LEFT_X, new_border_y, IID_WHITE_BORDER_LINE);
         m_actors.push_back(whiteBorder);
-        whiteBorder = new BorderLine(m_player, RIGHT_X, new_border_y, IID_WHITE_BORDER_LINE);
+        whiteBorder = new BorderLine(this, RIGHT_X, new_border_y, IID_WHITE_BORDER_LINE);
         m_actors.push_back(whiteBorder);
         lastWhite = whiteBorder;
     }
@@ -115,7 +115,7 @@ int StudentWorld::move()
     int lostSoulChance = 100;
     if (createNewActor(lostSoulChance))
     {
-        Actor* lostSoul = new LostSoul(m_player, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT);
+        Actor* lostSoul = new LostSoul(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT);
         m_actors.push_back(lostSoul);
     }
 

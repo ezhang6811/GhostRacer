@@ -4,16 +4,19 @@
 #include "GraphObject.h"
 
 class StudentWorld;
+class GhostRacer;
 
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 class Actor : public GraphObject
 {
 public:
-	Actor(int imageID, double startX, double startY, int dir, double size, unsigned int depth);
+	Actor(StudentWorld* game, int imageID, double startX, double startY, int dir, double size, unsigned int depth);
 
 	virtual void doSomething() = 0;
 	virtual bool isAlive() const = 0;
 
+	//getters and setters for additional private members
+	StudentWorld* getWorld() { return m_game; }
 	int getVertSpeed() const { return m_vertSpeed; }
 	void setVertSpeed(int speed) { m_vertSpeed = speed; }
 	int getHorizSpeed() const { return m_horizSpeed; }
@@ -21,8 +24,10 @@ public:
 
 	bool offScreen() const;
 	bool overlap(Actor* other);
+	virtual void moveOnScreen();
 
 private:
+	StudentWorld* m_game;
 	int m_vertSpeed;
 	int m_horizSpeed;
 };
@@ -31,7 +36,7 @@ private:
 class SentientActor : public Actor
 {
 public:
-	SentientActor(int imageID, double startX, double startY, int hp, int dir, double size, unsigned int depth);
+	SentientActor(StudentWorld* game, int imageID, double startX, double startY, int hp, int dir, double size, unsigned int depth);
 	void decHP(int hp) { m_hp -= hp; }
 	int getHP() const { return m_hp; }
 	virtual bool isAlive() const { return m_hp > 0; }
@@ -43,7 +48,7 @@ private:
 class NoncollidingActor : public Actor
 {
 public:
-	NoncollidingActor(int imageID, double startX, double startY, int dir, double size, unsigned int depth);
+	NoncollidingActor(StudentWorld* game, int imageID, double startX, double startY, int dir, double size, unsigned int depth);
 	virtual bool isAlive() const { return m_alive; }
 	void kill() { m_alive = false; }
 private:
@@ -56,37 +61,29 @@ class GhostRacer : public SentientActor
 public:
 	GhostRacer(StudentWorld* game, double startX, double startY);
 	virtual void doSomething();
-	StudentWorld* getWorld() const;
 private:
-	StudentWorld* m_game;
 	int holyWaterUnits;
 };
 
 class HumanPedestrian : public SentientActor
 {
 public:
-	HumanPedestrian(GhostRacer* p, double startX, double startY);
+	HumanPedestrian(StudentWorld* game, double startX, double startY);
 	virtual void doSomething();
-private:
-	GhostRacer* m_player;
 };
 
 class BorderLine : public NoncollidingActor
 {
 public:
-	BorderLine(GhostRacer* p, double startX, double startY, int colorID);
+	BorderLine(StudentWorld* game, double startX, double startY, int colorID);
 	virtual void doSomething();
-private:
-	GhostRacer* m_player;
 };
 
 class LostSoul : public NoncollidingActor
 {
 public:
-	LostSoul(GhostRacer* p, double startX, double startY);
+	LostSoul(StudentWorld* game, double startX, double startY);
 	virtual void doSomething();
-private:
-	GhostRacer* m_player;
 };
 
 #endif // ACTOR_H
