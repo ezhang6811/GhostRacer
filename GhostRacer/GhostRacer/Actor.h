@@ -36,7 +36,7 @@ private:
 class SentientActor : public Actor
 {
 public:
-	SentientActor(StudentWorld* game, int imageID, double startX, double startY, int hp, int dir, double size, unsigned int depth);
+	SentientActor(StudentWorld* game, int imageID, double startX, double startY, int hp, int dir, double size);
 	void decHP(int hp) { m_hp -= hp; }
 	int getHP() const { return m_hp; }
 	virtual bool isAlive() const { return m_hp > 0; }
@@ -55,6 +55,18 @@ private:
 	bool m_alive;
 };
 
+//MovingAgent: all occurences of SentientActor except GhostRacer, which have a movement plan distance
+class MovingAgent : public SentientActor
+{
+public:
+	MovingAgent(StudentWorld* game, int imageID, double startX, double startY, int hp, int dir, double size);
+	int getMovementPlanDistance() { return m_movePlanDist; }
+	void decMovementPlanDistance() { m_movePlanDist--; }
+	void pickNewMovementPlan();
+private:
+	int m_movePlanDist;
+};
+
 
 class GhostRacer : public SentientActor
 {
@@ -65,10 +77,17 @@ private:
 	int holyWaterUnits;
 };
 
-class HumanPedestrian : public SentientActor
+class HumanPedestrian : public MovingAgent
 {
 public:
 	HumanPedestrian(StudentWorld* game, double startX, double startY);
+	virtual void doSomething();
+};
+
+class ZombiePedestrian : public MovingAgent
+{
+public:
+	ZombiePedestrian(StudentWorld* game, double startX, double startY);
 	virtual void doSomething();
 };
 

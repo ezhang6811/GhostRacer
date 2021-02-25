@@ -35,9 +35,25 @@ void Actor::moveOnScreen()
 }
 
 //SentientActor constructor
-SentientActor::SentientActor(StudentWorld* game, int imageID, double startX, double startY, int hp, int dir = 0, double size = 1.0, unsigned int depth = 0)
-	:Actor(game, imageID, startX, startY, dir, size, depth), m_hp(hp)
+SentientActor::SentientActor(StudentWorld* game, int imageID, double startX, double startY, int hp, int dir = 0, double size = 1.0)
+	:Actor(game, imageID, startX, startY, dir, size, 0), m_hp(hp)
 {
+}
+
+//MovingAgent constructor
+MovingAgent::MovingAgent(StudentWorld* game, int imageID, double startX, double startY, int hp, int dir, double size)
+	: SentientActor(game, imageID, startX, startY, hp, dir, size), m_movePlanDist(0)
+{
+	setVertSpeed(-4);
+}
+
+void MovingAgent::pickNewMovementPlan()
+{
+	m_movePlanDist = randInt(4, 32);
+	if (getHorizSpeed() < 0)
+		setDirection(180);
+	else
+		setDirection(0);
 }
 
 NoncollidingActor::NoncollidingActor(StudentWorld* game, int imageID, double startX, double startY, int dir = 0, double size = 1.0, unsigned int depth = 0)
@@ -47,7 +63,7 @@ NoncollidingActor::NoncollidingActor(StudentWorld* game, int imageID, double sta
 
 //ghost racer implementations
 GhostRacer::GhostRacer(StudentWorld* game, double startX, double startY)
-	:SentientActor(game, IID_GHOST_RACER, startX, startY, 100, 90, 4.0, 0), holyWaterUnits(10)
+	:SentientActor(game, IID_GHOST_RACER, startX, startY, 100, 90, 4.0), holyWaterUnits(10)
 {
 	setVertSpeed(0);
 }	//note: m_horizSpeed is not used in any movement calculations for GhostRacer objects
@@ -106,7 +122,7 @@ void GhostRacer::doSomething()
 
 //Human pedestrian implementations
 HumanPedestrian::HumanPedestrian(StudentWorld* game, double startX, double startY)
-	:SentientActor(game, IID_HUMAN_PED, startX, startY, 2, 0, 2.0, 0)
+	:MovingAgent(game, IID_HUMAN_PED, startX, startY, 2, 0, 2.0)
 {
 }
 
@@ -114,11 +130,57 @@ void HumanPedestrian::doSomething()
 {
 	if (!isAlive())
 		return;
+
 	if (overlap(getWorld()->getPlayer()))
 	{
-		getWorld()->decLives();	//level ends
+		getWorld()->getPlayer()->decHP(getWorld()->getPlayer()->getHP());	//level ends
 		return;
 	}
+
+	moveOnScreen();
+	if (offScreen())
+		decHP(getHP());
+
+	decMovementPlanDistance();
+	if (getMovementPlanDistance() > 0)
+		return;
+	setHorizSpeed(randInt(-3, 3));
+	while (getHorizSpeed() == 0)
+		setHorizSpeed(randInt(-3, 3));
+	pickNewMovementPlan();
+}
+
+
+//Zombie pedestrian implementations
+ZombiePedestrian::ZombiePedestrian(StudentWorld* game, double startX, double startY)
+	:MovingAgent(game, IID_ZOMBIE_PED, startX, startY, 2, 0, 3.0)
+{
+}
+
+void ZombiePedestrian::doSomething()
+{
+	if (!isAlive())
+		return;
+	if (overlap(getWorld()->getPlayer()))
+	{
+		getWorld()->getPlayer()->decHP(5);
+		decHP(2);
+		return;
+	}
+
+	moveOnScreen();
+	if (offScreen())
+		decHP(2);
+
+	if (getMovementPlanDistance() > 0)
+	{
+		decMovementPlanDistance();
+		return;
+	}
+	setHorizSpeed(randInt(-3, 3));
+	while (getHorizSpeed() == 0)
+		setHorizSpeed(randInt(-3, 3));
+	pickNewMovementPlan();
 }
 
 //BorderLine implementations
@@ -126,7 +188,6 @@ BorderLine::BorderLine(StudentWorld* game, double startX, double startY, int col
 	:NoncollidingActor(game, colorID, startX, startY, 0, 2.0, 2)
 {
 	setVertSpeed(-4);
-	setHorizSpeed(0);
 }
 
 void BorderLine::doSomething()

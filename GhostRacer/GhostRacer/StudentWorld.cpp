@@ -72,7 +72,10 @@ int StudentWorld::move()
     {
         m_actors[i]->doSomething();
         if (!m_player->isAlive())
+        {
+            decLives();
             return GWSTATUS_PLAYER_DIED;
+        }
         //check if ghost racer has saved required number of souls
     }
 
@@ -111,6 +114,22 @@ int StudentWorld::move()
         lastWhite = whiteBorder;
     }
 
+    //add Zombie Peds
+    int zombiePedChance = max(100 - getLevel() * 10, 40);
+    if (createNewActor(zombiePedChance))
+    {
+        Actor* zombiePed = new ZombiePedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT);
+        m_actors.push_back(zombiePed);
+    }
+
+    //add Human Peds
+    int humanPedChance = max(200 - getLevel() * 10, 30);
+    if (createNewActor(zombiePedChance))
+    {
+        Actor* humanPed = new HumanPedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT);
+        m_actors.push_back(humanPed);
+    }
+
     //add lost souls
     int lostSoulChance = 100;
     if (createNewActor(lostSoulChance))
@@ -120,6 +139,7 @@ int StudentWorld::move()
     }
 
     return GWSTATUS_CONTINUE_GAME;
+
 }
 
 void StudentWorld::cleanUp()
