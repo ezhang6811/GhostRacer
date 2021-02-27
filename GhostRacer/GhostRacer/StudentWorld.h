@@ -22,6 +22,13 @@ public:
 
     GhostRacer* getPlayer() { return m_player; }
 
+    //find closest collision avoidance-worthy actors near a given object
+    int findLane(Actor* a);     //returns 1, 2, or 3
+    Actor* closestAbove(Actor* a);
+    Actor* closestBelow(Actor* a);
+    Actor* closestToTop(int lane);
+    Actor* closestToBottom(int lane);
+
 private:
     GhostRacer* m_player;
     std::vector<Actor*> m_actors;
@@ -38,6 +45,6 @@ const double LEFT_X = LEFT_EDGE + ROAD_WIDTH / 3;
 const double RIGHT_X = RIGHT_EDGE - ROAD_WIDTH / 3;
 
 //function that checks for overlap of two Actor objects
-bool createNewActor(int genChance);
+bool chanceNewActor(int genChance);
 
 #endif // STUDENTWORLD_H_

@@ -116,7 +116,7 @@ int StudentWorld::move()
 
     //add Zombie Peds
     int zombiePedChance = max(100 - getLevel() * 10, 40);
-    if (createNewActor(zombiePedChance))
+    if (chanceNewActor(zombiePedChance))
     {
         Actor* zombiePed = new ZombiePedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT);
         m_actors.push_back(zombiePed);
@@ -124,15 +124,59 @@ int StudentWorld::move()
 
     //add Human Peds
     int humanPedChance = max(200 - getLevel() * 10, 30);
-    if (createNewActor(zombiePedChance))
+    if (chanceNewActor(zombiePedChance))
     {
         Actor* humanPed = new HumanPedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT);
         m_actors.push_back(humanPed);
     }
 
+    //add Zombie Cabs
+    int vehicleChance = max(100 - getLevel() * 10, 20);
+    if (chanceNewActor(vehicleChance))
+    {
+        bool laneChosen[3] = { false, false, false };
+        int cur_lane = randInt(1, 3);
+
+        int addZombieCab = -1;
+        double vehicleStartX;
+        double vehicleStartY;
+        int vehicleVertSpeed = getPlayer()->getVertSpeed();
+        for (int i = 0; i < 3; i++)
+        {
+            if (!closestToBottom((cur_lane + i) % 3) || closestToBottom((cur_lane + i) % 3)->getY() > VIEW_HEIGHT / 3)
+            {
+                addZombieCab = (cur_lane + i) % 3;
+                vehicleStartY = SPRITE_HEIGHT / 2;
+                vehicleVertSpeed += randInt(2, 4);
+                break;
+            }
+            if (!closestToTop((cur_lane + i) % 3) || closestToTop((cur_lane + i) % 3)->getY() < VIEW_HEIGHT * 2/3)
+            {
+                addZombieCab = (cur_lane + i) % 3;
+                vehicleStartY = VIEW_HEIGHT - SPRITE_HEIGHT / 2;
+                vehicleVertSpeed -= randInt(2, 4);
+                break;
+            }
+        }
+
+        if (addZombieCab)
+        {
+            if (addZombieCab == 1)
+                vehicleStartX = ROAD_CENTER - ROAD_WIDTH / 3;
+            else if (addZombieCab == 2)
+                vehicleStartX = ROAD_CENTER;
+            else if (addZombieCab == 3)
+                vehicleStartX = ROAD_CENTER + ROAD_WIDTH / 3;
+
+            Actor* zombieCab = new ZombieCab(this, vehicleStartX, vehicleStartY, vehicleVertSpeed);
+            m_actors.push_back(zombieCab);
+        }
+        
+    }
+
     //add lost souls
     int lostSoulChance = 100;
-    if (createNewActor(lostSoulChance))
+    if (chanceNewActor(lostSoulChance))
     {
         Actor* lostSoul = new LostSoul(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT);
         m_actors.push_back(lostSoul);
@@ -157,7 +201,101 @@ StudentWorld::~StudentWorld()
     cleanUp();
 }
 
-bool createNewActor(int genChance)
+int StudentWorld::findLane(Actor* a)
+{
+    if (a->getX() < LEFT_X)
+        return 1;
+    else if (a->getX() < RIGHT_X)
+        return 2;
+    return 3;
+}
+
+Actor* StudentWorld::closestAbove(Actor* a)
+{
+    double shortestDist = VIEW_HEIGHT;
+    Actor* closestActor = nullptr;
+
+    int lane = findLane(a);
+
+    for (int i = 0; i < m_actors.size(); i++)
+    {
+        if (m_actors[i]->isCollisionAvoidanceWorthy() && findLane(m_actors[i]) == lane && m_actors[i]->getY() > a->getY())
+        {
+            if (m_actors[i]->getY() - a->getY() < shortestDist)
+            {
+                closestActor = m_actors[i];
+                shortestDist = m_actors[i]->getY() - a->getY();
+            }
+        }
+    }
+    return closestActor;
+}
+
+Actor* StudentWorld::closestBelow(Actor* a)
+{
+    double shortestDist = VIEW_HEIGHT;
+    Actor* closestActor = nullptr;
+
+    int lane = findLane(a);
+
+    for (int i = 0; i < m_actors.size(); i++)
+    {
+        if (m_actors[i]->isCollisionAvoidanceWorthy() && findLane(m_actors[i]) == lane && m_actors[i]->getY() < a->getY())
+        {
+            if (a->getY() - m_actors[i]->getY() < shortestDist)
+            {
+                closestActor = m_actors[i];
+                shortestDist = a->getY() - m_actors[i]->getY();
+            }
+        }
+    }
+    if (findLane(m_player) == lane && a->getY() - m_player->getY() < shortestDist)
+        closestActor = m_player;
+
+    return closestActor;
+}
+
+Actor* StudentWorld::closestToTop(int lane)
+{
+    Actor* topActor = nullptr;
+    double biggestY = 0;
+    for (int i = 0; i < m_actors.size(); i++)
+    {
+        if (m_actors[i]->isCollisionAvoidanceWorthy() && findLane(m_actors[i]) == lane)
+        {
+            if (m_actors[i]->getY() > biggestY)
+            {
+                topActor = m_actors[i];
+                biggestY = m_actors[i]->getY();
+            }
+        }
+    }
+    return topActor;
+}
+
+Actor* StudentWorld::closestToBottom(int lane)
+{
+    Actor* bottomActor = nullptr;
+    double smallestY = VIEW_HEIGHT;
+    for (int i = 0; i < m_actors.size(); i++)
+    {
+        if (m_actors[i]->isCollisionAvoidanceWorthy() && findLane(m_actors[i]) == lane)
+        {
+            if (m_actors[i]->getY() < smallestY)
+            {
+                bottomActor = m_actors[i];
+                smallestY = m_actors[i]->getY();
+            }
+        }
+    }
+
+    if (findLane(m_player) == lane && m_player->getY() < smallestY)
+        bottomActor = m_player;
+
+    return bottomActor;
+}
+
+bool chanceNewActor(int genChance)
 {
     int n = randInt(0, genChance);
     return (n == 0);

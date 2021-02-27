@@ -25,6 +25,7 @@ public:
 	bool offScreen() const;
 	bool overlap(Actor* other);
 	virtual void moveOnScreen();
+	virtual bool isCollisionAvoidanceWorthy() const { return false; }
 
 private:
 	StudentWorld* m_game;
@@ -40,6 +41,7 @@ public:
 	void decHP(int hp) { m_hp -= hp; }
 	int getHP() const { return m_hp; }
 	virtual bool isAlive() const { return m_hp > 0; }
+	virtual bool isCollisionAvoidanceWorthy() const { return true; }
 private:
 	int m_hp;
 };
@@ -62,7 +64,8 @@ public:
 	MovingAgent(StudentWorld* game, int imageID, double startX, double startY, int hp, int dir, double size);
 	int getMovementPlanDistance() { return m_movePlanDist; }
 	void decMovementPlanDistance() { m_movePlanDist--; }
-	void pickNewMovementPlan();
+	void resetMovementPlanDistance() { m_movePlanDist = randInt(4, 32); }
+	virtual void pickNewMovementPlan();
 private:
 	int m_movePlanDist;
 };
@@ -89,6 +92,16 @@ class ZombiePedestrian : public MovingAgent
 public:
 	ZombiePedestrian(StudentWorld* game, double startX, double startY);
 	virtual void doSomething();
+};
+
+class ZombieCab : public MovingAgent
+{
+public:
+	ZombieCab(StudentWorld* game, double startX, double startY, int vertSpeed);
+	virtual void pickNewMovementPlan();
+	virtual void doSomething();
+private:
+	bool hasDamagedGhostRacer;
 };
 
 class BorderLine : public NoncollidingActor

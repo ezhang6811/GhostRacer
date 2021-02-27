@@ -49,16 +49,16 @@ MovingAgent::MovingAgent(StudentWorld* game, int imageID, double startX, double 
 
 void MovingAgent::pickNewMovementPlan()
 {
-	m_movePlanDist = randInt(4, 32);
+	setHorizSpeed(randInt(-3, 3));
+	while (getHorizSpeed() == 0)
+		setHorizSpeed(randInt(-3, 3));
+
+	resetMovementPlanDistance();
+
 	if (getHorizSpeed() < 0)
 		setDirection(180);
 	else
 		setDirection(0);
-}
-
-NoncollidingActor::NoncollidingActor(StudentWorld* game, int imageID, double startX, double startY, int dir = 0, double size = 1.0, unsigned int depth = 0)
-	:Actor(game, imageID, startX, startY, dir, size, depth), m_alive(true)
-{
 }
 
 //ghost racer implementations
@@ -144,9 +144,7 @@ void HumanPedestrian::doSomething()
 	decMovementPlanDistance();
 	if (getMovementPlanDistance() > 0)
 		return;
-	setHorizSpeed(randInt(-3, 3));
-	while (getHorizSpeed() == 0)
-		setHorizSpeed(randInt(-3, 3));
+	
 	pickNewMovementPlan();
 }
 
@@ -177,10 +175,77 @@ void ZombiePedestrian::doSomething()
 		decMovementPlanDistance();
 		return;
 	}
-	setHorizSpeed(randInt(-3, 3));
-	while (getHorizSpeed() == 0)
-		setHorizSpeed(randInt(-3, 3));
+
 	pickNewMovementPlan();
+}
+
+//Zombie cab implementations
+ZombieCab::ZombieCab(StudentWorld* game, double startX, double startY, int vertSpeed)
+	:MovingAgent(game, IID_ZOMBIE_CAB, startX, startY, 3, 90, 4.0), hasDamagedGhostRacer(false)
+{
+	setVertSpeed(vertSpeed);
+}
+
+void ZombieCab::pickNewMovementPlan()
+{
+	setVertSpeed(getVertSpeed() + randInt(-2, 2));
+
+	resetMovementPlanDistance();
+}
+
+void ZombieCab::doSomething()
+{
+	if (!isAlive())
+		return;
+
+	if (overlap(getWorld()->getPlayer()) && !hasDamagedGhostRacer)
+	{
+		getWorld()->playSound(SOUND_VEHICLE_CRASH);
+		getWorld()->getPlayer()->decHP(20);
+		if (getX() <= getWorld()->getPlayer()->getX())
+		{
+			setHorizSpeed(-5);
+			setDirection(120 + randInt(0, 20));
+		}
+		else
+		{
+			setHorizSpeed(5);
+			setDirection(60 - randInt(0, 20));
+		}
+		hasDamagedGhostRacer = true;
+	}
+
+	moveOnScreen();
+	if (offScreen())
+		decHP(getHP());
+
+	if (getVertSpeed() > getWorld()->getPlayer()->getVertSpeed())
+	{
+		if (getWorld()->closestAbove(this) && getWorld()->closestAbove(this)->getY() - getY() < 96)
+		{
+			setVertSpeed(getVertSpeed() - 0.5);
+			return;
+		}
+	}
+	else
+	{
+		if (getWorld()->closestBelow(this) && getY() - getWorld()->closestBelow(this)->getY() < 96)
+		{
+			setVertSpeed(getVertSpeed() + 0.5);
+			return;
+		}
+	}
+
+	decMovementPlanDistance();
+	if (getMovementPlanDistance() > 0)
+		return;
+
+	pickNewMovementPlan();
+}
+
+NoncollidingActor::NoncollidingActor(StudentWorld* game, int imageID, double startX, double startY, int dir = 0, double size = 1.0, unsigned int depth = 0)
+	:Actor(game, imageID, startX, startY, dir, size, depth), m_alive(true)
+{
 }
 
 //BorderLine implementations
