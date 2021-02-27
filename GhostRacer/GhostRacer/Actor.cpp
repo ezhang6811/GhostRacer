@@ -120,6 +120,14 @@ void GhostRacer::doSomething()
 	moveTo(getX() + delta_x, getY());
 }
 
+void GhostRacer::spin()
+{
+	int dirChange = 0;
+	while (abs(dirChange) < 5 || getDirection() + dirChange < 60 && getDirection() + dirChange > 120)
+		dirChange = randInt(-20, 20);
+	setDirection(getDirection() + dirChange);
+}
+
 //Human pedestrian implementations
 HumanPedestrian::HumanPedestrian(StudentWorld* game, double startX, double startY)
 	:MovingAgent(game, IID_HUMAN_PED, startX, startY, 2, 0, 2.0)
@@ -266,6 +274,24 @@ void BorderLine::doSomething()
 		kill();
 }
 
+OilSlick::OilSlick(StudentWorld* game, double startX, double startY)
+	:NoncollidingActor(game, IID_OIL_SLICK, startX, startY, 0, randInt(2, 5), 2)
+{
+	setVertSpeed(-4);
+}
+
+void OilSlick::doSomething()
+{
+	moveOnScreen();
+	if (offScreen())
+		kill();
+	
+	if (overlap(getWorld()->getPlayer()))
+	{
+		getWorld()->playSound(SOUND_OIL_SLICK);
+		getWorld()->getPlayer()->spin();
+	}
+}
 
 LostSoul::LostSoul(StudentWorld* game, double startX, double startY)
 	:NoncollidingActor(game, IID_SOUL_GOODIE, startX, startY, 0, 4.0, 2)

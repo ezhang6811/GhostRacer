@@ -174,6 +174,14 @@ int StudentWorld::move()
         
     }
 
+    //add oil slicks
+    int oilSlickChance = max(150 - getLevel() * 10, 40);
+    if (chanceNewActor(oilSlickChance))
+    {
+        Actor* oilSlick = new OilSlick(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT);
+        m_actors.push_back(oilSlick);
+    }
+
     //add lost souls
     int lostSoulChance = 100;
     if (chanceNewActor(lostSoulChance))

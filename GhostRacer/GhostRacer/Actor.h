@@ -33,7 +33,7 @@ private:
 	int m_horizSpeed;
 };
 
-//SentientActor: contains all actors whose alive status depends on health points, and collision avoidance-worthy
+//SentientActor: contains all actors whose alive status depends on health points, and who are collision avoidance-worthy
 class SentientActor : public Actor
 {
 public:
@@ -46,15 +46,15 @@ private:
 	int m_hp;
 };
 
-//NoncollidingActor: goodies and oil slicks whose alive status is boolean
-class NoncollidingActor : public Actor
+//Ghost Racer class
+class GhostRacer : public SentientActor
 {
 public:
-	NoncollidingActor(StudentWorld* game, int imageID, double startX, double startY, int dir, double size, unsigned int depth);
-	virtual bool isAlive() const { return m_alive; }
-	void kill() { m_alive = false; }
+	GhostRacer(StudentWorld* game, double startX, double startY);
+	virtual void doSomething();
+	void spin();
 private:
-	bool m_alive;
+	int holyWaterUnits;
 };
 
 //MovingAgent: all occurences of SentientActor except GhostRacer, which have a movement plan distance
@@ -70,16 +70,7 @@ private:
 	int m_movePlanDist;
 };
 
-
-class GhostRacer : public SentientActor
-{
-public:
-	GhostRacer(StudentWorld* game, double startX, double startY);
-	virtual void doSomething();
-private:
-	int holyWaterUnits;
-};
-
+//Human Pedestrian class
 class HumanPedestrian : public MovingAgent
 {
 public:
@@ -87,6 +78,7 @@ public:
 	virtual void doSomething();
 };
 
+//Zombie Pedestrian class
 class ZombiePedestrian : public MovingAgent
 {
 public:
@@ -94,6 +86,7 @@ public:
 	virtual void doSomething();
 };
 
+//Zombie Cab class
 class ZombieCab : public MovingAgent
 {
 public:
@@ -104,6 +97,18 @@ private:
 	bool hasDamagedGhostRacer;
 };
 
+//NoncollidingActor: goodies and oil slicks whose alive status is boolean, and are not collision avoidance-worthy
+class NoncollidingActor : public Actor
+{
+public:
+	NoncollidingActor(StudentWorld* game, int imageID, double startX, double startY, int dir, double size, unsigned int depth);
+	virtual bool isAlive() const { return m_alive; }
+	void kill() { m_alive = false; }
+private:
+	bool m_alive;
+};
+
+//White and yellow border line class
 class BorderLine : public NoncollidingActor
 {
 public:
@@ -111,11 +116,22 @@ public:
 	virtual void doSomething();
 };
 
+//Oil slick class
+class OilSlick : public NoncollidingActor
+{
+public:
+	OilSlick(StudentWorld* game, double startX, double startY);
+	virtual void doSomething();
+};
+
+//Lost soul goodie class
 class LostSoul : public NoncollidingActor
 {
 public:
 	LostSoul(StudentWorld* game, double startX, double startY);
 	virtual void doSomething();
 };
+
+
 
 #endif // ACTOR_H
