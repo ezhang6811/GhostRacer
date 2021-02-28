@@ -2,6 +2,7 @@
 #include "GameConstants.h"
 #include "Actor.h"
 #include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ GameWorld* createStudentWorld(string assetPath)
 // Students:  Add code to this file, StudentWorld.h, Actor.h, and Actor.cpp
 
 StudentWorld::StudentWorld(string assetPath)
-: GameWorld(assetPath), m_player(nullptr), lastYellow(nullptr), lastWhite(nullptr)
+: GameWorld(assetPath), m_player(nullptr), lastYellow(nullptr), lastWhite(nullptr), soulsToSave(0), bonusScore(0)
 {
 }
 
@@ -24,20 +25,14 @@ int StudentWorld::init()
     //add borderline objects
 
     int N = VIEW_HEIGHT / SPRITE_HEIGHT;
-    //left yellow borderlines
+    // yellow borderlines
     for (int i = 0; i < N; i++)
     {
         double Y = i * SPRITE_HEIGHT;
         Actor* leftBorder = new BorderLine(this, LEFT_EDGE, Y, IID_YELLOW_BORDER_LINE);
-        m_actors.push_back(leftBorder);
-        lastYellow = leftBorder;
-    }
-    //right yellow borderlines
-    for (int i = 0; i < N; i++)
-    {
-        double Y = i * SPRITE_HEIGHT;
+        addActor(leftBorder);
         Actor* rightBorder = new BorderLine(this, RIGHT_EDGE, Y, IID_YELLOW_BORDER_LINE);
-        m_actors.push_back(rightBorder);
+        addActor(rightBorder);
         lastYellow = rightBorder;
     }
 
@@ -47,19 +42,15 @@ int StudentWorld::init()
     {
         double Y = i * (4 * SPRITE_HEIGHT);
         Actor* whiteBorder = new BorderLine(this, LEFT_X, Y, IID_WHITE_BORDER_LINE);
-        m_actors.insert(m_actors.begin(), whiteBorder);
+        addActor(whiteBorder);
         lastWhite = whiteBorder;
-    }
-    //right white border line
-    for (int i = 0; i < M; i++)
-    {
-        double Y = i * (4 * SPRITE_HEIGHT);
-        Actor* whiteBorder = new BorderLine(this, RIGHT_X, Y, IID_WHITE_BORDER_LINE);
-        m_actors.insert(m_actors.begin(), whiteBorder);
+        whiteBorder = new BorderLine(this, RIGHT_X, Y, IID_WHITE_BORDER_LINE);
+        addActor(whiteBorder);
         lastWhite = whiteBorder;
     }
 
-    setGameStatText("hihihihihih");
+    soulsToSave = getLevel() * 2 + 5;
+    bonusScore = 5000;
 
     return GWSTATUS_CONTINUE_GAME;
 }
@@ -67,29 +58,33 @@ int StudentWorld::init()
 int StudentWorld::move()
 {
     m_player->doSomething();
-    //tell all actors in the world to do something
-    for (int i = 0; i < m_actors.size(); i++)
-    {
-        m_actors[i]->doSomething();
-        if (!m_player->isAlive())
-        {
-            decLives();
-            return GWSTATUS_PLAYER_DIED;
-        }
-        //check if ghost racer has saved required number of souls
-    }
 
-    //delete actors that have died
+    //tell all actors in the world to do something, delete dead actors.
     for (int i = 0; i < m_actors.size(); i++)
     {
-        if (!m_actors[i]->isAlive())
+        if (m_actors[i]->isAlive())
+        {
+           m_actors[i]->doSomething();
+           if (!m_player->isAlive())
+           {
+               decLives();
+               return GWSTATUS_PLAYER_DIED;
+           }
+           if (soulsToSave == 0)
+           {
+               increaseScore(bonusScore);
+               return GWSTATUS_FINISHED_LEVEL;
+           }
+        }
+        else
         {
             delete m_actors[i];
             m_actors.erase(m_actors.begin() + i);
         }
     }
 
-    //add new actors
+    //add new border lines
+
     double delta_y;
     int new_border_y = VIEW_HEIGHT - SPRITE_HEIGHT;
     delta_y = new_border_y - lastYellow->getY();
@@ -97,9 +92,9 @@ int StudentWorld::move()
     {
         //add yellow border lines
         Actor* yellowBorder = new BorderLine(this, LEFT_EDGE, new_border_y, IID_YELLOW_BORDER_LINE);
-        m_actors.push_back(yellowBorder);
+        addActor(yellowBorder);
         yellowBorder = new BorderLine(this, RIGHT_EDGE, new_border_y, IID_YELLOW_BORDER_LINE);
-        m_actors.push_back(yellowBorder);
+        addActor(yellowBorder);
         lastYellow = yellowBorder;
     }
 
@@ -108,26 +103,10 @@ int StudentWorld::move()
     {
         //add white border lines
         Actor* whiteBorder = new BorderLine(this, LEFT_X, new_border_y, IID_WHITE_BORDER_LINE);
-        m_actors.push_back(whiteBorder);
+        addActor(whiteBorder);
         whiteBorder = new BorderLine(this, RIGHT_X, new_border_y, IID_WHITE_BORDER_LINE);
-        m_actors.push_back(whiteBorder);
+        addActor(whiteBorder);
         lastWhite = whiteBorder;
-    }
-
-    //add Zombie Peds
-    int zombiePedChance = max(100 - getLevel() * 10, 40);
-    if (chanceNewActor(zombiePedChance))
-    {
-        Actor* zombiePed = new ZombiePedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT);
-        m_actors.push_back(zombiePed);
-    }
-
-    //add Human Peds
-    int humanPedChance = max(200 - getLevel() * 10, 30);
-    if (chanceNewActor(zombiePedChance))
-    {
-        Actor* humanPed = new HumanPedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT);
-        m_actors.push_back(humanPed);
     }
 
     //add Zombie Cabs
@@ -150,7 +129,7 @@ int StudentWorld::move()
                 vehicleVertSpeed += randInt(2, 4);
                 break;
             }
-            if (!closestToTop((cur_lane + i) % 3) || closestToTop((cur_lane + i) % 3)->getY() < VIEW_HEIGHT * 2/3)
+            if (!closestToTop((cur_lane + i) % 3) || closestToTop((cur_lane + i) % 3)->getY() < VIEW_HEIGHT * 2 / 3)
             {
                 addZombieCab = (cur_lane + i) % 3;
                 vehicleStartY = VIEW_HEIGHT - SPRITE_HEIGHT / 2;
@@ -169,9 +148,9 @@ int StudentWorld::move()
                 vehicleStartX = ROAD_CENTER + ROAD_WIDTH / 3;
 
             Actor* zombieCab = new ZombieCab(this, vehicleStartX, vehicleStartY, vehicleVertSpeed);
-            m_actors.push_back(zombieCab);
+            addActor(zombieCab);
         }
-        
+
     }
 
     //add oil slicks
@@ -179,7 +158,31 @@ int StudentWorld::move()
     if (chanceNewActor(oilSlickChance))
     {
         Actor* oilSlick = new OilSlick(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT);
-        m_actors.push_back(oilSlick);
+        addActor(oilSlick);
+    }
+
+    //add Zombie Peds
+    int zombiePedChance = max(100 - getLevel() * 10, 40);
+    if (chanceNewActor(zombiePedChance))
+    {
+        Actor* zombiePed = new ZombiePedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT);
+        addActor(zombiePed);
+    }
+
+    //add Human Peds
+    int humanPedChance = max(200 - getLevel() * 10, 30);
+    if (chanceNewActor(zombiePedChance))
+    {
+        Actor* humanPed = new HumanPedestrian(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT);
+        addActor(humanPed);
+    }
+
+    //add holy water refills
+    int holyWaterChance = 100 + 10 * getLevel();
+    if (chanceNewActor(holyWaterChance))
+    {
+        Actor* holyWaterGoodie = new HolyWaterGoodie(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT);
+        addActor(holyWaterGoodie);
     }
 
     //add lost souls
@@ -187,8 +190,19 @@ int StudentWorld::move()
     if (chanceNewActor(lostSoulChance))
     {
         Actor* lostSoul = new LostSoul(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT);
-        m_actors.push_back(lostSoul);
+        addActor(lostSoul);
     }
+
+
+    //update game text
+    //score, lvl, souls2save, lives, health, sprays, bonus
+    ostringstream gameText;
+    bonusScore--;
+
+    gameText << "Score: " << getScore() << "  Lvl: " << getLevel() << "  Souls2Save: " << soulsToSave << "  Lives: " << getLives();
+    gameText << "  Health: " << getPlayer()->getHP() << "  Sprays: " << getPlayer()->getHolyWater() << "  Bonus: " << bonusScore;
+
+    setGameStatText(gameText.str());
 
     return GWSTATUS_CONTINUE_GAME;
 
@@ -207,6 +221,16 @@ void StudentWorld::cleanUp()
 StudentWorld::~StudentWorld()
 {
     cleanUp();
+}
+
+void StudentWorld::addActor(Actor* a)
+{
+    m_actors.push_back(a);
+}
+
+void StudentWorld::recordSoulSaved()
+{
+    soulsToSave--;
 }
 
 int StudentWorld::findLane(Actor* a)
@@ -301,6 +325,18 @@ Actor* StudentWorld::closestToBottom(int lane)
         bottomActor = m_player;
 
     return bottomActor;
+}
+
+bool StudentWorld::sprayFirstAppropriateActor(Actor* a)
+{
+    for (int i = 0; i < m_actors.size(); i++)
+    {
+        if (a->overlap(m_actors[i]) && m_actors[i]->beSprayedIfAppropriate())
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool chanceNewActor(int genChance)

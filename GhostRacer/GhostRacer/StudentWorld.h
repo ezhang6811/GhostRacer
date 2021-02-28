@@ -21,6 +21,8 @@ public:
     ~StudentWorld();
 
     GhostRacer* getPlayer() { return m_player; }
+    void addActor(Actor* a);
+    void recordSoulSaved();
 
     //find closest collision avoidance-worthy actors near a given object
     int findLane(Actor* a);     //returns 1, 2, or 3
@@ -29,9 +31,14 @@ public:
     Actor* closestToTop(int lane);
     Actor* closestToBottom(int lane);
 
+    //check if touched by holy water
+    bool sprayFirstAppropriateActor(Actor* a);
+
 private:
     GhostRacer* m_player;
     std::vector<Actor*> m_actors;
+    int soulsToSave;
+    int bonusScore;
 
     //pointers to determine road borders last added to screen
     Actor* lastYellow;

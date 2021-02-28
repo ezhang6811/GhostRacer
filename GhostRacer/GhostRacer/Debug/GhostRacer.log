@@ -1,7 +1,14 @@
-﻿  Actor.cpp
-  GameController.cpp
-  GameWorld.cpp
-  main.cpp
-  StudentWorld.cpp
-  Generating Code...
+﻿  StudentWorld.cpp
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(63,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(160,65): warning C4244: 'argument': conversion from 'const double' to 'int', possible loss of data
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(160,54): warning C4244: 'argument': conversion from 'const double' to 'int', possible loss of data
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(184,79): warning C4244: 'argument': conversion from 'const double' to 'int', possible loss of data
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(184,68): warning C4244: 'argument': conversion from 'const double' to 'int', possible loss of data
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(192,65): warning C4244: 'argument': conversion from 'const double' to 'int', possible loss of data
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(192,54): warning C4244: 'argument': conversion from 'const double' to 'int', possible loss of data
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(252,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(273,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(294,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(312,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\GhostRacer\StudentWorld.cpp(332,23): warning C4018: '<': signed/unsigned mismatch
   GhostRacer.vcxproj -> C:\Users\zjm\Desktop\UCLA Computer Science\CS 32\Project3\GhostRacer\Debug\GhostRacer.exe

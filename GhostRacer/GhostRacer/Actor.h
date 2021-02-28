@@ -13,10 +13,12 @@ public:
 	Actor(StudentWorld* game, int imageID, double startX, double startY, int dir, double size, unsigned int depth);
 
 	virtual void doSomething() = 0;
-	virtual bool isAlive() const = 0;
+	virtual bool isAlive() const { return m_alive; }
+	void kill() { m_alive = false; }
 
 	//getters and setters for additional private members
 	StudentWorld* getWorld() { return m_game; }
+	GhostRacer* getPlayer();
 	int getVertSpeed() const { return m_vertSpeed; }
 	void setVertSpeed(int speed) { m_vertSpeed = speed; }
 	int getHorizSpeed() const { return m_horizSpeed; }
@@ -24,13 +26,15 @@ public:
 
 	bool offScreen() const;
 	bool overlap(Actor* other);
-	virtual void moveOnScreen();
+	void moveOnScreen();
+	virtual bool beSprayedIfAppropriate() { return false; }
 	virtual bool isCollisionAvoidanceWorthy() const { return false; }
 
 private:
 	StudentWorld* m_game;
 	int m_vertSpeed;
 	int m_horizSpeed;
+	bool m_alive;
 };
 
 //SentientActor: contains all actors whose alive status depends on health points, and who are collision avoidance-worthy
@@ -52,6 +56,9 @@ class GhostRacer : public SentientActor
 public:
 	GhostRacer(StudentWorld* game, double startX, double startY);
 	virtual void doSomething();
+	void heal() { decHP(-10); }
+	int getHolyWater() { return holyWaterUnits; }
+	void increaseHolyWater() { holyWaterUnits += 10; }
 	void spin();
 private:
 	int holyWaterUnits;
@@ -76,6 +83,7 @@ class HumanPedestrian : public MovingAgent
 public:
 	HumanPedestrian(StudentWorld* game, double startX, double startY);
 	virtual void doSomething();
+	virtual bool beSprayedIfAppropriate();
 };
 
 //Zombie Pedestrian class
@@ -84,6 +92,9 @@ class ZombiePedestrian : public MovingAgent
 public:
 	ZombiePedestrian(StudentWorld* game, double startX, double startY);
 	virtual void doSomething();
+	virtual bool beSprayedIfAppropriate();
+private:
+	int ticksToNextGrunt;
 };
 
 //Zombie Cab class
@@ -93,6 +104,7 @@ public:
 	ZombieCab(StudentWorld* game, double startX, double startY, int vertSpeed);
 	virtual void pickNewMovementPlan();
 	virtual void doSomething();
+	virtual bool beSprayedIfAppropriate();
 private:
 	bool hasDamagedGhostRacer;
 };
@@ -102,10 +114,8 @@ class NoncollidingActor : public Actor
 {
 public:
 	NoncollidingActor(StudentWorld* game, int imageID, double startX, double startY, int dir, double size, unsigned int depth);
-	virtual bool isAlive() const { return m_alive; }
-	void kill() { m_alive = false; }
-private:
-	bool m_alive;
+	virtual bool beSprayedIfAppropriate();
+	virtual bool isSprayable() const = 0;
 };
 
 //White and yellow border line class
@@ -114,6 +124,7 @@ class BorderLine : public NoncollidingActor
 public:
 	BorderLine(StudentWorld* game, double startX, double startY, int colorID);
 	virtual void doSomething();
+	virtual bool isSprayable() const { return false; }
 };
 
 //Oil slick class
@@ -122,6 +133,25 @@ class OilSlick : public NoncollidingActor
 public:
 	OilSlick(StudentWorld* game, double startX, double startY);
 	virtual void doSomething();
+	virtual bool isSprayable() const { return false; }
+};
+
+//Healing goodie class
+class HealingGoodie : public NoncollidingActor
+{
+public:
+	HealingGoodie(StudentWorld* game, double startX, double startY);
+	virtual void doSomething();
+	virtual bool isSprayable() const { return true; }
+};
+
+//Holy water goodie class
+class HolyWaterGoodie : public NoncollidingActor
+{
+public:
+	HolyWaterGoodie(StudentWorld* game, double startX, double startY);
+	virtual void doSomething();
+	virtual bool isSprayable() const { return true; }
 };
 
 //Lost soul goodie class
@@ -130,8 +160,18 @@ class LostSoul : public NoncollidingActor
 public:
 	LostSoul(StudentWorld* game, double startX, double startY);
 	virtual void doSomething();
+	virtual bool isSprayable() const { return false; }
 };
 
+//Holy water projectile class
+class Spray : public Actor
+{
+public:
+	Spray(StudentWorld* game, double startX, double startY, int dir);
+	virtual void doSomething();
+private:
+	int maxTravelDistance;
+};
 
 
 #endif // ACTOR_H
